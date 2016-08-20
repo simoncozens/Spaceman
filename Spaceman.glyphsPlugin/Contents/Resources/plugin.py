@@ -12,6 +12,9 @@ class SpacemanView(NSView):
   selectedIdx = None
   dragDir = None
 
+  def _hasEditableCell(self):
+    return True
+
   def drawRect_(self, dirtyRect):
     global dirtyHack
     NSColor.whiteColor().setFill();
@@ -89,26 +92,31 @@ class SpacemanView(NSView):
     except:
       NSLog(traceback.format_exc())
 
+  def keyDown_(self, theEvent):
+    try:
+      if not(self.selectedIdx) or self.selectedIdx < 1:
+        return
+      kc = theEvent.keyCode()
+      delta = 1
+      if theEvent.modifierFlags() & NSShiftKeyMask:
+        delta = 10
+      if kc == 123:
+        self.modifyDistance(-delta)
+      elif kc == 124:
+        self.modifyDistance(delta)
+    except:
+      NSLog(traceback.format_exc())
+
   def mouseDown_(self, theEvent):
     loc = self.convertPoint_fromView_(theEvent.locationInWindow(),None)
+    self.window().makeFirstResponder_(self)
     for idx,l,rect,dist in self.textIterator():
       if NSPointInRect(loc, rect):
         self.selectedIdx = idx
         self.setNeedsDisplay_(True)
 
-  def mouseUp_(self, theEvent):
-    self.dragDir = None
-
-  def mouseDragged_(self, theEvent):
+  def modifyDistance(self, delta):
     try:
-      if not(self.selectedIdx) or self.selectedIdx < 1:
-        return
-      delta = theEvent.deltaX() / self.scalefactor
-      print("Delta was %.f" % delta)
-      if abs(delta) <= 1:
-        return
-      if not self.dragDir:
-        self.dragDir = delta / abs(delta)
       self.prepSolver()
       for idx,l,rect,dist in self.textIterator():
         if idx == self.selectedIdx:
@@ -117,6 +125,17 @@ class SpacemanView(NSView):
       result = self.solver.solve()
       self.solver.setResult(result)
       self.setNeedsDisplay_(True)
+    except:
+      NSLog(traceback.format_exc())
+
+  def mouseDragged_(self, theEvent):
+    try:
+      if not(self.selectedIdx) or self.selectedIdx < 1:
+        return
+      delta = theEvent.deltaX() / self.scalefactor
+      if abs(delta) <= 1:
+        return
+      self.modifyDistance(delta)
     except:
       NSLog(traceback.format_exc())
 
