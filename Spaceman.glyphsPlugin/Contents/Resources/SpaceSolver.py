@@ -49,7 +49,7 @@ class SpaceSolver:
   def hasBalanceConstraint(self,l):
     return "balance"+l in self.constraints
 
-  def removeKernConstraint(self,l):
+  def removeBalanceConstraint(self,l):
     del(self.constraints["balance"+l])
 
   def solve(self):

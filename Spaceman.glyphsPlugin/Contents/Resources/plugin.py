@@ -133,7 +133,6 @@ class SpacemanView(NSView):
       NSLog(traceback.format_exc())
 
   def mouseDown_(self, theEvent):
-    global dirtyHack
     loc = self.convertPoint_fromView_(theEvent.locationInWindow(),None)
     self.window().makeFirstResponder_(self)
     lastL = None
@@ -144,6 +143,30 @@ class SpacemanView(NSView):
         self.setNeedsDisplay_(True)
       lastL = l
 
+  def centerClicked(self,newstate):
+    try:
+      for idx,l,rect,dist in self.textIterator():
+        if idx == self.selectedIdx:
+          if newstate == NSOnState:
+            self.solver.addBalanceConstraint(l.parent.name,guess=l.LSB)
+          else:
+            self.solver.removeBalanceConstraint(l.parent.name)
+    except:
+      NSLog(traceback.format_exc())
+
+  def dontKernClicked(self,newstate):
+    try:
+      lastL = None
+      for idx,l,rect,dist in self.textIterator():
+        if idx == self.selectedIdx and lastL:
+          if newstate == NSOnState:
+            self.solver.addKernConstraint(lastL.parent.name,l.parent.name)
+          else:
+            self.solver.removeKernConstraint(lastL.parent.name,l.parent.name)
+        lastL=l
+    except:
+      NSLog(traceback.format_exc())
+
   def renewSolver(self):
     self.prepSolver()
 
@@ -151,6 +174,8 @@ class SpacemanView(NSView):
     try:
       lastL = None
       finalDist = None
+      # This would all be so much cleaner if we saved l and lastL,
+      # instead of storing selectedIdx
       for idx,l,rect,dist in self.textIterator():
         if idx == self.selectedIdx and lastL:
           finalDist = dist+delta
@@ -238,20 +263,20 @@ class Spaceman(GeneralPlugin):
       NSLog(traceback.format_exc())
 
   @objc.IBAction
-  def viewKeyDown_(self, theEvent):
-    pass
-
-  @objc.IBAction
-  def viewMouseDragged_(self, theEvent):
-    print("drag")
-
-  @objc.IBAction
   def okClicked_(self, sender):
     pass
 
   @objc.IBAction
   def cancelClicked_(self, sender):
     pass
+
+  @objc.IBAction
+  def centerClicked_(self, sender):
+    self.smView.centerClicked(self.smCenter.state())
+
+  @objc.IBAction
+  def dontKernClicked_(self, sender):
+    self.smView.dontKernClicked(self.smDontKern.state())
 
   def controlTextDidChange_(self, notification):
     try:

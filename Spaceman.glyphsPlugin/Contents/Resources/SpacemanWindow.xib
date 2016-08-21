@@ -77,6 +77,9 @@ DQ
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <connections>
+                            <action selector="centerClicked:" target="-2" id="K3m-sK-T6D"/>
+                        </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ned-pj-p3s">
                         <rect key="frame" x="578" y="321" width="201" height="18"/>
@@ -84,6 +87,9 @@ DQ
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <connections>
+                            <action selector="dontKernClicked:" target="-2" id="SdO-PA-0Iq"/>
+                        </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aUf-Ue-KUv">
                         <rect key="frame" x="705" y="397" width="58" height="48"/>
