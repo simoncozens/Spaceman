@@ -122,6 +122,13 @@ class SpacemanView(NSView):
       else:
         dirtyHack.smDistance.setStringValue_("")
         dirtyHack.smLeftGlyph.setStringValue_("")
+
+      dirtyHack.smCenter.setEnabled_(True)
+      dirtyHack.smCenter.setState_(self.solver.hasBalanceConstraint(l.parent.name))
+      dirtyHack.smDontKern.setEnabled_(True)
+      dirtyHack.smDontKern.setState_(self.solver.hasKernConstraint(lastL.parent.name, l.parent.name))
+
+
     except:
       NSLog(traceback.format_exc())
 
