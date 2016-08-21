@@ -11,6 +11,7 @@ class SpacemanView(NSView):
   scalefactor = 5.0/72.0
   selectedIdx = None
   dragDir = None
+  solver = None
 
   def _hasEditableCell(self):
     return True
@@ -23,6 +24,9 @@ class SpacemanView(NSView):
       return
 
     try:
+      if not self.solver:
+        self.prepSolver()
+
       gc = NSGraphicsContext.currentContext()
       gc.saveGraphicsState()
       NSColor.blackColor().setStroke()
@@ -133,9 +137,11 @@ class SpacemanView(NSView):
         self.setNeedsDisplay_(True)
       lastL = l
 
+  def renewSolver(self):
+    self.prepSolver()
+
   def modifyDistance(self, delta):
     try:
-      self.prepSolver()
       lastL = None
       finalDist = None
       for idx,l,rect,dist in self.textIterator():
@@ -164,17 +170,21 @@ class SpacemanView(NSView):
       NSLog(traceback.format_exc())
 
   def prepSolver(self):
-    lastL = None
-    self.solver = SpaceSolver()
-    for idx,l,rect,dist in self.textIterator():
-      if l and lastL:
-        self.solver.prepare(lastL, l)
-      lastL = l
-    self.solver.addKernConstraint("n","n")
-    self.solver.addKernConstraint("o","o")
-    self.solver.addKernConstraint("o","n")
-    self.solver.addKernConstraint("n","o")
-    self.solver.addBalanceConstraint("o")
+    try:
+      lastL = None
+      self.solver = SpaceSolver()
+      for idx,l,rect,dist in self.textIterator():
+        if l and lastL:
+          self.solver.prepare(lastL, l)
+        lastL = l
+      self.solver.addKernConstraint("n","n")
+      self.solver.addKernConstraint("o","o")
+      self.solver.addKernConstraint("o","n")
+      self.solver.addKernConstraint("n","o")
+      self.solver.addBalanceConstraint("o")
+    except:
+      NSLog(traceback.format_exc())
+
 
 class Spaceman(GeneralPlugin):
   spacemanWindow = objc.IBOutlet()
@@ -238,6 +248,7 @@ class Spaceman(GeneralPlugin):
 
   def controlTextDidChange_(self, notification):
     try:
+      self.smView.renewSolver()
       self.smView.setNeedsDisplay_(True)
     except:
       NSLog(traceback.format_exc())

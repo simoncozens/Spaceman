@@ -35,10 +35,22 @@ class SpaceSolver:
     kern = self.assignVariable("kern|"+l+"|"+r, 0)
     self.constraints["zerokern"+l+r] = lambda: self.opt.add_equality_constraint(lambda x,grad: x[kern])
 
+  def hasKernConstraint(self,l,r):
+    return "zerokern"+l+r in self.constraints
+
+  def removeKernConstraint(self,l,r):
+    del(self.constraints["zerokern"+l+r])
+
   def addBalanceConstraint(self,l,guess=50):
     rsb = self.assignVariable("RSB|"+l, guess)
     lsb = self.assignVariable("LSB|"+l, guess)
     self.constraints["balance"+l] = lambda: self.opt.add_equality_constraint(lambda x,grad: x[rsb] - x[lsb])
+
+  def hasBalanceConstraint(self,l):
+    return "balance"+l in self.constraints
+
+  def removeKernConstraint(self,l):
+    del(self.constraints["balance"+l])
 
   def solve(self):
     self.opt = nlopt.opt(nlopt.LN_COBYLA,len(self.x))
