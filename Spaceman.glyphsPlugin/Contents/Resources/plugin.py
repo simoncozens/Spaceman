@@ -107,23 +107,47 @@ class SpacemanView(NSView):
     except:
       NSLog(traceback.format_exc())
 
+  def updateStatus(self, l, lastL, dist):
+    try:
+      dirtyHack.smGlyph.setStringValue_(l.parent.name)
+      dirtyHack.smLSB.setIntValue_(l.LSB)
+      dirtyHack.smRSB.setIntValue_(l.RSB)
+      if lastL:
+        dirtyHack.smDistance.setIntValue_(dist)
+        dirtyHack.smLeftGlyph.setStringValue_(lastL.parent.name)
+      else:
+        dirtyHack.smDistance.setStringValue_("")
+        dirtyHack.smLeftGlyph.setStringValue_("")
+    except:
+      NSLog(traceback.format_exc())
+
   def mouseDown_(self, theEvent):
+    global dirtyHack
     loc = self.convertPoint_fromView_(theEvent.locationInWindow(),None)
     self.window().makeFirstResponder_(self)
+    lastL = None
     for idx,l,rect,dist in self.textIterator():
       if NSPointInRect(loc, rect):
         self.selectedIdx = idx
+        self.updateStatus(l, lastL, dist)
         self.setNeedsDisplay_(True)
+      lastL = l
 
   def modifyDistance(self, delta):
     try:
       self.prepSolver()
+      lastL = None
+      finalDist = None
       for idx,l,rect,dist in self.textIterator():
-        if idx == self.selectedIdx:
-          self.solver.modify(lastL,l,dist+delta)
+        if idx == self.selectedIdx and lastL:
+          finalDist = dist+delta
+          self.solver.modify(lastL,l,finalDist)
+          break
         lastL = l
-      result = self.solver.solve()
-      self.solver.setResult(result)
+      if finalDist:
+        self.updateStatus(l, lastL, finalDist)
+        result = self.solver.solve()
+        self.solver.setResult(result)
       self.setNeedsDisplay_(True)
     except:
       NSLog(traceback.format_exc())
@@ -159,6 +183,13 @@ class Spaceman(GeneralPlugin):
   smCancelbutton = objc.IBOutlet()
   smOkbutton = objc.IBOutlet()
   smView = objc.IBOutlet()
+  smCenter = objc.IBOutlet()
+  smDontKern = objc.IBOutlet()
+  smLSB = objc.IBOutlet()
+  smRSB = objc.IBOutlet()
+  smGlyph = objc.IBOutlet()
+  smLeftGlyph = objc.IBOutlet()
+  smDistance = objc.IBOutlet()
 
   def start(self):
     try:
@@ -178,6 +209,13 @@ class Spaceman(GeneralPlugin):
 
   def launchSpaceman(self):
     try:
+      self.smGlyph.setStringValue_("")
+      self.smLSB.setStringValue_("")
+      self.smRSB.setStringValue_("")
+      self.smDistance.setStringValue_("")
+      self.smLeftGlyph.setStringValue_("")
+      self.smCenter.setEnabled_(False)
+      self.smDontKern.setEnabled_(False)
       self.spacemanWindow.makeKeyAndOrderFront_(self)
     except:
       NSLog(traceback.format_exc())
